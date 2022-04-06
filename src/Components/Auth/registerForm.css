@@ -5,6 +5,10 @@
 .bg-container{
     background-Color: #F2F2F2;
 }
+
+#left {
+    background: rgba(219,87,82, 0.85) 
+}
 .border-radius-25{
     border-radius: 25px;
 }

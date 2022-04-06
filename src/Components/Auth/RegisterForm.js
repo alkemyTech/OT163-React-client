@@ -1,7 +1,10 @@
-import React from 'react';
+/* eslint-disable multiline-ternary */
+import React, { useState } from 'react';
 import { useFormik } from 'formik';
-import { Button, Container, Col, Form, Row } from 'react-bootstrap';
+import { Button, Container, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { FaEye } from 'react-icons/fa';
+import { AiFillEyeInvisible } from 'react-icons/ai';
 import './registerForm.css';
 import './shapes.css';
 
@@ -19,14 +22,19 @@ const validate = (values) => {
   if (!values.email) {
     errors.email = 'Campo requerido';
   } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
-    errors.email = 'Invalid email address';
+    errors.email = 'Dirección de correo electrónico no válida';
   }
 
   if (!values.password) {
     errors.password = 'Campo requerido';
-  } else if (values.password.length < 6) {
+  } else if (
+    !/^(?=.*\d)(?=.*[\u0021-\u002b\u003c-\u0040])(?=.*[A-Za-z])\S{6,16}$/i.test(
+      // eslint-disable-next-line comma-dangle
+      values.password
+    )
+  ) {
     errors.password =
-      'La contraseña debe tener una longitud mínima de 6 caractees';
+      'La contraseña debe tener una longitud mínima de 6 caracteres, y contener al menos un número, una letra y un símbolo (por ejemplo: @#$%).';
   }
 
   if (values.password !== values.confirmPassword) {
@@ -37,14 +45,6 @@ const validate = (values) => {
 };
 
 const RegisterForm = () => {
-  // const [initialValues, setInitialValues] = useState({
-  //   name: '',
-  //   lastName: '',
-  //   email: '',
-  //   password: '',
-  //   confirmPassword: '',
-  // });
-
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -56,30 +56,20 @@ const RegisterForm = () => {
     validate,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
+      formik.resetForm();
     },
   });
 
-  // const handleChange = (e) => {
-  //   if (e.target.name === 'name') {
-  //     setInitialValues({ ...initialValues, name: e.target.value });
-  //   }
-  //   if (e.target.name === 'lastName') {
-  //     setInitialValues({ ...initialValues, lastName: e.target.value });
-  //   }
-  // };
-
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log(initialValues);
-  //   localStorage.setItem('token', 'tokenValueExample');
-  // };
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   return (
-    <Container>
+    <Container className="vh-100 d-flex justify-content-center align-items-center">
       <Row className="border-radius-25 bg-container">
         <Col
           md="4"
-          className="d-none d-sm-none d-md-block bg-primary bg-gradient-primary border-top-left-radius-25 border-bottom-left-radius-25"
+          id="left"
+          className="d-none d-sm-none d-md-block border-top-left-radius-25 border-bottom-left-radius-25"
         >
           <div className="h-100">
             <div className="d-flex justify-content-center align-items-center mt-3 mb-3">
@@ -115,12 +105,17 @@ const RegisterForm = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.firstName}
-                  className="rounded-pill"
+                  className={
+                    formik.errors.name
+                      ? 'rounded-pill border-danger'
+                      : 'rounded-pill border-success'
+                  }
                   placeholder="Nombre"
                 />
-                {formik.errors.name
-                  ? <></> && <div>{formik.errors.name}</div>
-                  : null}
+
+                {formik.errors.name ? (
+                  <span className="text-primary">{formik.errors.name}</span>
+                ) : null}
               </Form.Group>
               <Form.Group
                 as={Col}
@@ -133,12 +128,18 @@ const RegisterForm = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.lastName}
-                  className="rounded-pill"
+                  className={
+                    formik.errors.lastName
+                      ? 'rounded-pill border-danger'
+                      : 'rounded-pill border-success'
+                  }
                   placeholder="Apellidos"
                 />
-                {formik.errors.lastName
-                  ? <></> && <div>{formik.errors.lastName} </div>
-                  : null}
+                {formik.errors.lastName ? (
+                  <span className="text-primary">
+                    {formik.errors.lastName}{' '}
+                  </span>
+                ) : null}
               </Form.Group>
             </Row>
             <Form.Group controlId="email" className="mb-3 input-group-lg">
@@ -148,59 +149,105 @@ const RegisterForm = () => {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.email}
-                className="rounded-pill"
+                className={
+                  formik.errors.email
+                    ? 'rounded-pill border-danger'
+                    : 'rounded-pill border-success'
+                }
                 placeholder="Email"
               />
-              {formik.errors.email
-                ? <></> && <div>{formik.errors.email} </div>
-                : null}
+              {formik.errors.email ? (
+                <span className="text-primary">{formik.errors.email} </span>
+              ) : null}
             </Form.Group>
             <Row className="mb-4">
-              <Form.Group
-                as={Col}
-                md="6"
-                controlId="password"
-                className="mb-3 input-group-lg"
-              >
+              <Form.Group as={Col} md="6" controlId="password">
                 <Form.Label className="fw-bold fs-5">Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.password}
-                  className="rounded-pill"
-                  placeholder="Password"
-                />
-                {formik.errors.password
-                  ? <></> && <div>{formik.errors.password} </div>
-                  : null}
+                <InputGroup className="input-group-lg">
+                  <Form.Control
+                    type={showPass ? 'text' : 'password'}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.password}
+                    className={
+                      formik.errors.password
+                        ? 'rounded-end rounded-pill border-danger'
+                        : 'rounded-end rounded-pill border-success'
+                    }
+                    placeholder="Password"
+                  />
+                  <Button
+                    variant="outline-secondary"
+                    id="button-addon1"
+                    className={
+                      formik.errors.password
+                        ? 'rounded-start rounded-pill border-danger'
+                        : 'rounded-start rounded-pill border-success'
+                    }
+                    onClick={() => {
+                      setShowPass(!showPass);
+                    }}
+                  >
+                    {showPass ? (
+                      <AiFillEyeInvisible className="fs-3" />
+                    ) : (
+                      <FaEye className="fs-3" />
+                    )}
+                  </Button>
+                </InputGroup>
+                {formik.errors.password ? (
+                  <span className="text-primary">
+                    {formik.errors.password}{' '}
+                  </span>
+                ) : null}
               </Form.Group>
-              <Form.Group
-                as={Col}
-                md="6"
-                controlId="confirmPassword"
-                className="mb-3 input-group-lg"
-              >
+              <Form.Group as={Col} md="6" controlId="confirmPassword">
                 <Form.Label className="fw-bold fs-5">
                   Confirmar password
                 </Form.Label>
-                <Form.Control
-                  type="password"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.confirmPassword}
-                  className="rounded-pill"
-                  placeholder="Confirmar password"
-                />
-                {formik.errors.confirmPassword
-                  ? <></> && <div>{formik.errors.confirmPassword} </div>
-                  : null}
+                <InputGroup className="input-group-lg">
+                  <Form.Control
+                    type={showConfirmPass ? 'text' : 'password'}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.confirmPassword}
+                    className={
+                      formik.errors.confirmPassword
+                        ? 'rounded-end rounded-pill border-danger'
+                        : 'rounded-end rounded-pill border-success'
+                    }
+                    placeholder="Confirmar password"
+                  />
+                  <Button
+                    variant="outline-secondary"
+                    id="button-addon2"
+                    className={
+                      formik.errors.confirmPassword
+                        ? 'rounded-start rounded-pill border-danger'
+                        : 'rounded-start rounded-pill border-success'
+                    }
+                    onClick={() => {
+                      setShowConfirmPass(!showConfirmPass);
+                    }}
+                  >
+                    {showConfirmPass ? (
+                      <AiFillEyeInvisible className="fs-3" />
+                    ) : (
+                      <FaEye className="fs-3" />
+                    )}
+                  </Button>
+                </InputGroup>
+                {formik.errors.confirmPassword ? (
+                  <span className="text-primary">
+                    {formik.errors.confirmPassword}{' '}
+                  </span>
+                ) : null}
               </Form.Group>
             </Row>
             <Button
               variant="primary"
               type="submit"
-              className="bg-gradient text-white me-5"
+              className="btn-lg bg-gradient text-white me-5"
             >
               Regístrarme
             </Button>
